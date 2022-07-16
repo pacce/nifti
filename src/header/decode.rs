@@ -6,6 +6,7 @@ use {
         , IResult
     }
     , super::*
+    , super::intent::{Intent, Packet, Parameters}
 };
 
 pub (crate) type Bytes = [u8];
@@ -66,6 +67,74 @@ fn dimension<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, D
     Ok((i, Dimension{information, values}))
 }
 
+fn parameters<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Parameters, E> {
+    let mut xs = [0f32; 3];
+    let (i, _) = fill(be_f32, &mut xs)(i)?;
+
+    Ok((i, xs))
+}
+
+fn intent<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Intent, E> {
+    let (i, code) = be_i16(i)?;
+
+    match code {
+        2       => Ok((i, Intent::CORREL)),
+        3       => Ok((i, Intent::TTEST)),
+        4       => Ok((i, Intent::FTEST)),
+        5       => Ok((i, Intent::ZSCORE)),
+        6       => Ok((i, Intent::CHISQ)),
+        7       => Ok((i, Intent::BETA)),
+        8       => Ok((i, Intent::BINOM)),
+        9       => Ok((i, Intent::GAMMA)),
+        10      => Ok((i, Intent::POISSON)),
+        11      => Ok((i, Intent::NORMAL)),
+        12      => Ok((i, Intent::FTEST_NONC)),
+        13      => Ok((i, Intent::CHISQ_NONC)),
+        14      => Ok((i, Intent::LOGISTIC)),
+        15      => Ok((i, Intent::LAPLACE)),
+        16      => Ok((i, Intent::UNIFORM)),
+        17      => Ok((i, Intent::TTEST_NONC)),
+        18      => Ok((i, Intent::WEIBULL)),
+        19      => Ok((i, Intent::CHI)),
+        20      => Ok((i, Intent::INVGAUSS)),
+        21      => Ok((i, Intent::EXTVAL)),
+        22      => Ok((i, Intent::PVAL)),
+        23      => Ok((i, Intent::LOGPVAL)),
+        24      => Ok((i, Intent::LOG10PVAL)),
+        1001    => Ok((i, Intent::ESTIMATE)),
+        1002    => Ok((i, Intent::LABEL)),
+        1003    => Ok((i, Intent::NEURONAME)),
+        1004    => Ok((i, Intent::GENMATRIX)),
+        1005    => Ok((i, Intent::SYMMATRIX)),
+        1006    => Ok((i, Intent::DISPVECT)),
+        1007    => Ok((i, Intent::VECTOR)),
+        1008    => Ok((i, Intent::POINTSET)),
+        1009    => Ok((i, Intent::TRIANGLE)),
+        1010    => Ok((i, Intent::QUATERNION)),
+        1011    => Ok((i, Intent::DIMLESS)),
+        2001    => Ok((i, Intent::TIME_SERIES)),
+        2002    => Ok((i, Intent::NODE_INDEX)),
+        2003    => Ok((i, Intent::RGB_VECTOR)),
+        2004    => Ok((i, Intent::RGBA_VECTOR)),
+        2005    => Ok((i, Intent::SHAPE)),
+        2006    => Ok((i, Intent::FSL_FNIRT_DISPLACEMENT_FIELD)),
+        2007    => Ok((i, Intent::FSL_CUBIC_SPLINE_COEFFICIENTS)),
+        2008    => Ok((i, Intent::FSL_DCT_COEFFICIENTS)),
+        2009    => Ok((i, Intent::FSL_QUADRATIC_SPLINE_COEFFICIENTS)),
+        2016    => Ok((i, Intent::FSL_TOPUP_CUBIC_SPLINE_COEFFICIENTS)),
+        2017    => Ok((i, Intent::FSL_TOPUP_QUADRATIC_SPLINE_COEFFICIENTS)),
+        2018    => Ok((i, Intent::FSL_TOPUP_FIELD)),
+        _       => Ok((i, Intent::NONE)),
+    }
+}
+
+fn packet<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Packet, E> {
+    let (i, parameters) = parameters(i)?;
+    let (i, intent)     = intent(i)?;
+
+    Ok((i, Packet{parameters, intent}))
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
     let (i, size)       = sizeof_hdr(i)?;
     let (i, _)          = data_type(i)?;
@@ -75,7 +144,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, _)          = regular(i)?;
 
     let (i, dimension)  = dimension(i)?;
-    let (i, intent)     = intent::packet(i)?;
+    let (i, intent)     = packet(i)?;
 
     Ok((i, Header{size, dimension, intent}))
 }

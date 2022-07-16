@@ -1,6 +1,9 @@
 mod decode;
 mod encode;
 
+#[cfg(test)]
+mod test;
+
 mod intent;
 use intent::Packet;
 
@@ -29,5 +32,17 @@ impl Header {
             Ok((_, h))  => Ok(h),
             Err(_)      => unimplemented!()
         }
+    }
+
+    pub fn size(&self) -> &i32 {
+        &self.size
+    }
+
+    pub fn dimension(&self) -> &Dimension {
+        &self.dimension
+    }
+
+    pub fn intent(&self) -> &Packet {
+        &self.intent
     }
 }

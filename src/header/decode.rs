@@ -11,7 +11,7 @@ use {
 
 pub (crate) type Bytes = [u8];
 
-fn sizeof_hdr<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i32, E> {
+pub (super) fn sizeof_hdr<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i32, E> {
     let (i, v) = be_i32(i)?;
 
     Ok((i, v))
@@ -47,13 +47,13 @@ fn regular<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, (),
     Ok((i, ()))
 }
 
-fn dim_info<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i8, E> {
+pub (super) fn dim_info<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i8, E> {
     let (i, v) = be_i8(i)?;
 
     Ok((i, v))
 }
 
-fn dim<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, [i16; 8], E> {
+pub (super) fn dim<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, [i16; 8], E> {
     let mut xs = [0i16; 8];
     let (i, _) = fill(be_i16, &mut xs)(i)?;
 

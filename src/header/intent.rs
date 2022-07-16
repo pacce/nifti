@@ -6,6 +6,7 @@ pub struct Packet {
 
 pub (super) type Parameters = [f32; 3];
 
+#[allow(non_camel_case_types)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Intent {
     NONE                                    =    0,

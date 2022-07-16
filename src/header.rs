@@ -7,7 +7,7 @@ use std::io::Read;
 pub struct Header {
     size        : i32,
     dimension   : Dimension,
-    intent      : Intent,
+    intent      : Packet,
 }
 
 
@@ -15,11 +15,6 @@ pub struct Header {
 pub struct Dimension {
     information : i8,
     values      : [i16; 8]
-}
-
-#[derive(Debug)]
-pub struct Intent {
-    parameters  : [f32; 3]
 }
 
 impl Header {
@@ -104,14 +99,6 @@ mod decode {
         Ok((i, Dimension{information, values}))
     }
 
-    fn intent<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Intent, E> {
-        let mut xs = [0f32; 3];
-        let (i, _) = fill(be_f32, &mut xs)(i)?;
-
-        Ok((i, Intent{parameters: xs}))
-    }
-
-
     pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
         let (i, size)       = sizeof_hdr(i)?;
         let (i, _)          = data_type(i)?;
@@ -121,7 +108,7 @@ mod decode {
         let (i, _)          = regular(i)?;
 
         let (i, dimension)  = dimension(i)?;
-        let (i, intent)     = intent(i)?;
+        let (i, intent)     = intent::packet(i)?;
 
         Ok((i, Header{size, dimension, intent}))
     }

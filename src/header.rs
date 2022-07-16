@@ -6,7 +6,10 @@ use intent::Packet;
 
 use std::io::Read;
 
-#[derive(Debug)]
+#[cfg(test)]
+mod test;
+
+#[derive(Debug, PartialEq)]
 pub struct Header {
     size        : i32,
     dimension   : Dimension,
@@ -14,7 +17,7 @@ pub struct Header {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Dimension {
     information : i8,
     values      : [i16; 8]

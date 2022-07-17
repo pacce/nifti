@@ -50,7 +50,7 @@ pub (super) fn dim<W: Write>(xs: [i16; 8]) -> impl SerializeFn<W> {
     many_ref(xs, be_i16)
 }
 
-fn dimension<W: Write>(i: Dimension) -> impl SerializeFn<W> {
+pub (super) fn dimension<W: Write>(i: Dimension) -> impl SerializeFn<W> {
     tuple(
         ( dim_info(i.information)
         , dim(i.values)
@@ -66,7 +66,7 @@ fn intent<W: Write>(i: Intent) -> impl SerializeFn<W> {
     be_i16(i as i16)
 }
 
-fn packet<W: Write>(i: Packet) -> impl SerializeFn<W> {
+pub (super) fn packet<W: Write>(i: Packet) -> impl SerializeFn<W> {
     tuple(
         ( parameters(i.parameters)
         , intent(i.intent)

@@ -31,11 +31,11 @@ fn nifti1() {
         }
     };
 
-    let home        = Path::new(env!("CARGO_MANIFEST_DIR"));
-    let mut path    = &home.join("resources").join("avg152T1_LR_nifti.nii");
+    let home    = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let path    = &home.join("resources").join("avg152T1_LR_nifti.nii");
 
     let mut file    = File::open(&path).unwrap();
-    
+
     match Header::decode(&mut file) {
         Err(_) => assert!(false),
         Ok(actual) => assert_eq!(actual, expected),
@@ -77,6 +77,45 @@ fn dim(expected: i16) -> bool {
         false
     } else {
         match decode::dim::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn dimension(expected: Dimension) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::dimension(expected), &mut buffer) {
+        false
+    } else {
+        match decode::dimension::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn packet(expected: Packet) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::packet(expected), &mut buffer) {
+        false
+    } else {
+        match decode::packet::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn header(expected: Header) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::header(expected), &mut buffer) {
+        false
+    } else {
+        match decode::header::<(&[u8], ErrorKind)>(buffer.get_ref()) {
             Ok((_, actual)) => actual == expected,
             Err(_)          => false,
         }

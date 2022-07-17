@@ -60,7 +60,7 @@ pub (super) fn dim<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a By
     Ok((i, xs))
 }
 
-fn dimension<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Dimension, E> {
+pub (super) fn dimension<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Dimension, E> {
     let (i, information)    = dim_info(i)?;
     let (i, values)         = dim(i)?;
 
@@ -74,7 +74,7 @@ fn parameters<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     Ok((i, xs))
 }
 
-fn intent<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Intent, E> {
+pub (super) fn intent<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Intent, E> {
     let (i, code) = be_i16(i)?;
 
     match code {
@@ -128,7 +128,7 @@ fn intent<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Inte
     }
 }
 
-fn packet<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Packet, E> {
+pub (super) fn packet<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Packet, E> {
     let (i, parameters) = parameters(i)?;
     let (i, intent)     = intent(i)?;
 

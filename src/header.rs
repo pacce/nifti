@@ -4,28 +4,26 @@ mod encode;
 #[cfg(test)]
 mod test;
 
+mod dimension;
+use dimension::Dimension;
+
 mod intent;
 use intent::Packet;
 
 use std::io::Read;
 
-#[derive(Debug, PartialEq)]
+const SIZE : usize = 348;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Header {
     size        : i32,
     dimension   : Dimension,
     intent      : Packet,
 }
 
-
-#[derive(Debug, PartialEq)]
-pub struct Dimension {
-    information : i8,
-    values      : [i16; 8]
-}
-
 impl Header {
     pub fn decode<R: Read>(reader: &mut R) -> Result<Self, std::io::Error> {
-        let mut xs = [0u8; 348];
+        let mut xs = [0u8; SIZE];
         reader.read(&mut xs)?;
 
         match decode::header::<nom::error::Error<&decode::Bytes>>(&xs) {
@@ -44,5 +42,15 @@ impl Header {
 
     pub fn intent(&self) -> &Packet {
         &self.intent
+    }
+}
+
+#[cfg(test)]
+impl quickcheck::Arbitrary for Header {
+    fn arbitrary(g: &mut quickcheck::Gen) -> Self {
+        let dimension   = Dimension::arbitrary(g);
+        let intent      = Packet::arbitrary(g);
+
+        Self{size: SIZE as i32, dimension, intent}
     }
 }

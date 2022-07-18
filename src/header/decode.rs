@@ -12,9 +12,7 @@ use {
 pub (crate) type Bytes = [u8];
 
 pub (super) fn sizeof_hdr<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i32, E> {
-    let (i, v) = be_i32(i)?;
-
-    Ok((i, v))
+    be_i32(i)
 }
 
 fn data_type<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, (), E> {
@@ -48,9 +46,7 @@ fn regular<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, (),
 }
 
 pub (super) fn dim_info<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i8, E> {
-    let (i, v) = be_i8(i)?;
-
-    Ok((i, v))
+    be_i8(i)
 }
 
 pub (super) fn dim<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, [i16; 8], E> {
@@ -135,6 +131,39 @@ pub (super) fn packet<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a
     Ok((i, Packet{parameters, intent}))
 }
 
+pub (super) fn datatype<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Datatype, E> {
+    let (i, code) = be_i16(i)?;
+    match code {
+        1       => Ok((i, Datatype::BINARY)),
+        2       => Ok((i, Datatype::UINT8)),
+        4       => Ok((i, Datatype::INT16)),
+        8       => Ok((i, Datatype::INT32)),
+        16      => Ok((i, Datatype::FLOAT32)),
+        32      => Ok((i, Datatype::COMPLEX64)),
+        64      => Ok((i, Datatype::FLOAT64)),
+        128     => Ok((i, Datatype::RGB24)),
+        255     => Ok((i, Datatype::ALL)),
+        256     => Ok((i, Datatype::INT8)),
+        512     => Ok((i, Datatype::UINT16)),
+        768     => Ok((i, Datatype::UINT32)),
+        1024    => Ok((i, Datatype::INT64)),
+        1280    => Ok((i, Datatype::UINT64)),
+        1536    => Ok((i, Datatype::FLOAT128)),
+        1792    => Ok((i, Datatype::COMPLEX128)),
+        2048    => Ok((i, Datatype::COMPLEX256)),
+        2304    => Ok((i, Datatype::RGBA32)),
+        _       => Ok((i, Datatype::NONE)),
+    }
+}
+
+pub (super) fn bitpix<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i16, E> {
+    be_i16(i)
+}
+
+pub (super) fn slice_start<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i16, E> {
+    be_i16(i)
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
     let (i, size)       = sizeof_hdr(i)?;
     let (i, _)          = data_type(i)?;
@@ -146,5 +175,15 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, dimension)  = dimension(i)?;
     let (i, intent)     = packet(i)?;
 
-    Ok((i, Header{size, dimension, intent}))
+    let (i, datatype)   = datatype(i)?;
+    let (i, bitpix)     = bitpix(i)?;
+
+    let header  = Header {
+        size
+        , dimension
+        , intent
+        , datatype
+        , bitpix
+    };
+    Ok((i, header))
 }

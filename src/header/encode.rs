@@ -12,7 +12,8 @@ use {
     }
     , std::io::Write
     , super::{
-        Dimension
+        Datatype
+        , Dimension
         , Header
         , intent::{Intent, Packet, Parameters}
     }
@@ -74,6 +75,18 @@ pub (super) fn packet<W: Write>(i: Packet) -> impl SerializeFn<W> {
     )
 }
 
+pub (super) fn datatype<W: Write>(i: Datatype) -> impl SerializeFn<W> {
+    be_i16(i as i16)
+}
+
+pub (super) fn bitpix<W: Write>(i: i16) -> impl SerializeFn<W> {
+    be_i16(i)
+}
+
+pub (super) fn slice_start<W: Write>(i: i16) -> impl SerializeFn<W> {
+    be_i16(i)
+}
+
 pub fn header<W: Write>(i: Header) -> impl SerializeFn<W> {
     tuple(
         ( sizeof_hdr(i.size)
@@ -84,6 +97,8 @@ pub fn header<W: Write>(i: Header) -> impl SerializeFn<W> {
         , regular()
         , dimension(i.dimension)
         , packet(i.intent)
+        , datatype(i.datatype)
+        , bitpix(i.bitpix)
         )
     )
 }

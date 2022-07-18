@@ -10,6 +10,9 @@ use dimension::Dimension;
 mod intent;
 use intent::Packet;
 
+mod datatype;
+pub use datatype::Datatype;
+
 use std::io::Read;
 
 const SIZE : usize = 348;
@@ -19,6 +22,8 @@ pub struct Header {
     size        : i32,
     dimension   : Dimension,
     intent      : Packet,
+    datatype    : Datatype,
+    bitpix      : i16,
 }
 
 impl Header {
@@ -51,6 +56,15 @@ impl quickcheck::Arbitrary for Header {
         let dimension   = Dimension::arbitrary(g);
         let intent      = Packet::arbitrary(g);
 
-        Self{size: SIZE as i32, dimension, intent}
+        let datatype    = Datatype::arbitrary(g);
+        let bitpix      = i16::arbitrary(g);
+
+        Self{
+            size: SIZE as i32
+            , dimension
+            , intent
+            , datatype
+            , bitpix
+        }
     }
 }

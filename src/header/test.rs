@@ -8,10 +8,11 @@ use {
         , path::Path
     }
     , super::{
-        decode
+        Datatype
+        , Dimension
+        , decode
         , encode
         , intent::Intent
-        , Dimension
         , Header
         , Packet
     }
@@ -28,7 +29,9 @@ fn nifti1() {
         intent          : Packet {
             parameters  : [0.0, 0.0, 0.0],
             intent      : Intent::NONE
-        }
+        },
+        datatype        : Datatype::UINT8,
+        bitpix          : 8,
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -103,6 +106,32 @@ fn packet(expected: Packet) -> bool {
         false
     } else {
         match decode::packet::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn datatype(expected: Datatype) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::datatype(expected), &mut buffer) {
+        false
+    } else {
+        match decode::datatype::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn bitpix(expected: i16) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::bitpix(expected), &mut buffer) {
+        false
+    } else {
+        match decode::bitpix::<(&[u8], ErrorKind)>(buffer.get_ref()) {
             Ok((_, actual)) => actual == expected,
             Err(_)          => false,
         }

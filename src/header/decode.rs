@@ -234,8 +234,8 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, start)      = slice_start(i)?;
     let (i, pixdim)     = pixdim(i)?;
     let (i, offset)     = vox_offset(i)?;
-    let (i, _)          = scl_slope(i)?;
-    let (i, _)          = scl_inter(i)?;
+    let (i, slope)      = scl_slope(i)?;
+    let (i, intercept)  = scl_inter(i)?;
     let (i, end)        = slice_end(i)?;
     let (i, code)       = slice_code(i)?;
     let (i, _)          = xyzt_units(i)?;
@@ -243,7 +243,8 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, _)          = cal_min(i)?;
     let (i, duration)   = slice_duration(i)?;
 
-    let slice = Slice{start, end, code, duration};
+    let slice   = Slice{start, end, code, duration};
+    let scale   = Scale::new(slope, intercept);
 
     let header  = Header {
         size
@@ -254,6 +255,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
         , slice
         , pixdim
         , offset
+        , scale
     };
     Ok((i, header))
 }

@@ -16,6 +16,7 @@ use {
         , intent::Intent
         , Header
         , Packet
+        , Scale
         , Slice
     }
 };
@@ -41,7 +42,11 @@ fn nifti1() {
             duration    : 0.0
         },
         pixdim          : [0.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0],
-        offset          : 352.0f32
+        offset          : 352.0f32,
+        scale           : Scale {
+            slope       : 0.0f32,
+            intercept   : 0.0f32,
+        }
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));

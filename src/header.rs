@@ -15,6 +15,7 @@ use {
     , datatype::Datatype
     , dimension::Dimension
     , intent::Packet
+    , scale::Scale
     , slice::{Code, Slice}
     , std::io::{Read, Write}
 };
@@ -30,7 +31,8 @@ pub struct Header {
     bitpix      : i16,
     slice       : Slice,
     pixdim      : [f32; 8],
-    offset      : f32
+    offset      : f32,
+    scale       : Scale
 }
 
 impl Header {
@@ -78,6 +80,7 @@ impl quickcheck::Arbitrary for Header {
         let pixdim      = [i32::arbitrary(g) as f32; 8];
 
         let offset      = i32::arbitrary(g) as f32;
+        let scale       = Scale::arbitrary(g);
 
         Self{
             size: SIZE as i32
@@ -88,6 +91,7 @@ impl quickcheck::Arbitrary for Header {
             , slice
             , pixdim
             , offset
+            , scale
         }
     }
 }

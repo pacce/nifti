@@ -130,6 +130,8 @@ pub (super) fn slice_duration<W: Write>(i: f32) -> impl SerializeFn<W> {
 
 pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
     let slice = header.slice;
+    let scale = header.scale;
+
     tuple(
         ( sizeof_hdr(header.size)
         , data_type()
@@ -144,8 +146,8 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
         , slice_start(slice.start)
         , pixdim(header.pixdim)
         , vox_offset(header.offset)
-        , scl_slope(0.0f32)
-        , scl_inter(0.0f32)
+        , scl_slope(scale.slope)
+        , scl_inter(scale.intercept)
         , slice_end(slice.end)
         , slice_code(slice.code)
         , xyzt_units(0i8)

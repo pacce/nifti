@@ -233,6 +233,10 @@ pub (super) fn slice_duration<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IRe
     be_f32(i)
 }
 
+pub (super) fn toffset<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
     let (i, size)       = sizeof_hdr(i)?;
     let (i, _)          = data_type(i)?;
@@ -256,6 +260,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, _)          = xyzt_units(i)?;
     let (i, limits)     = limits(i)?;
     let (i, duration)   = slice_duration(i)?;
+    let (i, shift)      = toffset(i)?;
 
     let slice   = Slice{start, end, code, duration};
 
@@ -270,6 +275,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
         , offset
         , scale
         , limits
+        , shift
     };
     Ok((i, header))
 }

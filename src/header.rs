@@ -35,7 +35,8 @@ pub struct Header {
     pixdim      : [f32; 8],
     offset      : f32,
     scale       : Scale,
-    limits      : Limits
+    limits      : Limits,
+    shift       : f32,
 }
 
 impl Header {
@@ -83,8 +84,10 @@ impl quickcheck::Arbitrary for Header {
         let pixdim      = [i32::arbitrary(g) as f32; 8];
 
         let offset      = i32::arbitrary(g) as f32;
+
         let scale       = Scale::arbitrary(g);
         let limits      = Limits::arbitrary(g);
+        let shift       = i32::arbitrary(g) as f32;
 
         Self{
             size: SIZE as i32
@@ -97,6 +100,7 @@ impl quickcheck::Arbitrary for Header {
             , offset
             , scale
             , limits
+            , shift
         }
     }
 }

@@ -142,6 +142,10 @@ pub (super) fn slice_duration<W: Write>(i: f32) -> impl SerializeFn<W> {
     be_f32(i)
 }
 
+pub (super) fn toffset<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
 pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
     let slice   = header.slice;
 
@@ -165,6 +169,7 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
         , xyzt_units(0i8)
         , limits(header.limits)
         , slice_duration(slice.duration)
+        , toffset(header.shift)
         )
     )
 }

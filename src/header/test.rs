@@ -49,6 +49,7 @@ fn nifti1() {
             intercept   : 0.0f32,
         },
         limits          : Limits::new(0.0f32, 255.0f32),
+        shift           : 0.0f32,
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));

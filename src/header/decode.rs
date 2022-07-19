@@ -237,6 +237,14 @@ pub (super) fn toffset<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'
     be_f32(i)
 }
 
+pub (super) fn glmax<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i32, E> {
+    be_i32(i)
+}
+
+pub (super) fn glmin<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i32, E> {
+    be_i32(i)
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
     let (i, size)       = sizeof_hdr(i)?;
     let (i, _)          = data_type(i)?;
@@ -261,6 +269,9 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, limits)     = limits(i)?;
     let (i, duration)   = slice_duration(i)?;
     let (i, shift)      = toffset(i)?;
+
+    let (i, _)          = glmax(i)?;
+    let (i, _)          = glmin(i)?;
 
     let slice   = Slice{start, end, code, duration};
 

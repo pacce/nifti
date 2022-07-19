@@ -146,9 +146,15 @@ pub (super) fn toffset<W: Write>(i: f32) -> impl SerializeFn<W> {
     be_f32(i)
 }
 
-pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
-    let slice   = header.slice;
+pub (super) fn glmax<W: Write>(i: i32) -> impl SerializeFn<W> {
+    be_i32(i)
+}
 
+pub (super) fn glmin<W: Write>(i: i32) -> impl SerializeFn<W> {
+    be_i32(i)
+}
+
+pub fn header_key<W: Write>(header: Header) -> impl SerializeFn<W> {
     tuple(
         ( sizeof_hdr(header.size)
         , data_type()
@@ -156,7 +162,14 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
         , extents()
         , session_error()
         , regular()
-        , dimension(header.dimension)
+        )
+    )
+}
+
+pub fn image_dimension<W: Write>(header: Header) -> impl SerializeFn<W> {
+    let slice   = header.slice;
+    tuple(
+        ( dimension(header.dimension)
         , packet(header.intent)
         , datatype(header.datatype)
         , bitpix(header.bitpix)
@@ -170,6 +183,16 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
         , limits(header.limits)
         , slice_duration(slice.duration)
         , toffset(header.shift)
+        , glmax(0i32)
+        , glmin(0i32)
+        )
+    )
+}
+
+pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
+    tuple(
+        ( header_key(header)
+        , image_dimension(header)
         )
     )
 }

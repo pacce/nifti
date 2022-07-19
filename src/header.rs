@@ -4,16 +4,19 @@ mod encode;
 #[cfg(test)]
 mod test;
 
-mod dimension;
-use dimension::Dimension;
-
-mod intent;
-use intent::Packet;
-
 mod datatype;
-pub use datatype::Datatype;
+mod dimension;
+mod intent;
+mod slice;
 
-use std::io::Read;
+use {
+    cookie_factory::{gen, GenError}
+    , datatype::Datatype
+    , dimension::Dimension
+    , intent::Packet
+    , slice::{Code, Slice}
+    , std::io::{Read, Write}
+};
 
 const SIZE : usize = 348;
 
@@ -24,6 +27,7 @@ pub struct Header {
     intent      : Packet,
     datatype    : Datatype,
     bitpix      : i16,
+    slice       : Slice
 }
 
 impl Header {
@@ -34,6 +38,14 @@ impl Header {
         match decode::header::<nom::error::Error<&decode::Bytes>>(&xs) {
             Ok((_, h))  => Ok(h),
             Err(_)      => unimplemented!()
+        }
+    }
+
+    pub fn encode<W: Write>(&self, writer: &mut W) -> Result<(), GenError> {
+        if let Err(e) = gen(encode::header(*self), writer) {
+            Err(e)
+        } else {
+            Ok(())
         }
     }
 
@@ -59,12 +71,15 @@ impl quickcheck::Arbitrary for Header {
         let datatype    = Datatype::arbitrary(g);
         let bitpix      = i16::arbitrary(g);
 
+        let slice       = Slice::arbitrary(g);
+
         Self{
             size: SIZE as i32
             , dimension
             , intent
             , datatype
             , bitpix
+            , slice
         }
     }
 }

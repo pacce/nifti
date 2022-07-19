@@ -16,6 +16,7 @@ use {
         , Dimension
         , Header
         , intent::{Intent, Packet, Parameters}
+        , slice::Code
     }
 };
 
@@ -87,18 +88,70 @@ pub (super) fn slice_start<W: Write>(i: i16) -> impl SerializeFn<W> {
     be_i16(i)
 }
 
-pub fn header<W: Write>(i: Header) -> impl SerializeFn<W> {
+pub (super) fn pixdim<W: Write>(xs: [f32; 8]) -> impl SerializeFn<W> {
+    many_ref(xs, be_f32)
+}
+
+pub (super) fn vox_offset<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
+pub (super) fn scl_slope<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
+pub (super) fn scl_inter<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
+pub (super) fn slice_end<W: Write>(i: i16) -> impl SerializeFn<W> {
+    be_i16(i)
+}
+
+pub (super) fn slice_code<W: Write>(i: Code) -> impl SerializeFn<W> {
+    be_i8(i as i8)
+}
+
+pub (super) fn xyzt_units<W: Write>(i: i8) -> impl SerializeFn<W> {
+    be_i8(i)
+}
+
+pub (super) fn cal_max<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
+pub (super) fn cal_min<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
+pub (super) fn slice_duration<W: Write>(i: f32) -> impl SerializeFn<W> {
+    be_f32(i)
+}
+
+pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
+    let slice = header.slice;
     tuple(
-        ( sizeof_hdr(i.size)
+        ( sizeof_hdr(header.size)
         , data_type()
         , db_name()
         , extents()
         , session_error()
         , regular()
-        , dimension(i.dimension)
-        , packet(i.intent)
-        , datatype(i.datatype)
-        , bitpix(i.bitpix)
+        , dimension(header.dimension)
+        , packet(header.intent)
+        , datatype(header.datatype)
+        , bitpix(header.bitpix)
+        , slice_start(slice.start)
+        , pixdim([0.0f32; 8])
+        , vox_offset(0.0f32)
+        , scl_slope(0.0f32)
+        , scl_inter(0.0f32)
+        , slice_end(slice.end)
+        , slice_code(slice.code)
+        , xyzt_units(0i8)
+        , cal_max(0.0f32)
+        , cal_min(0.0f32)
+        , slice_duration(slice.duration)
         )
     )
 }

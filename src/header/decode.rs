@@ -7,6 +7,7 @@ use {
     }
     , super::*
     , super::intent::{Intent, Packet, Parameters}
+    , super::Code
 };
 
 pub (crate) type Bytes = [u8];
@@ -164,6 +165,58 @@ pub (super) fn slice_start<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResul
     be_i16(i)
 }
 
+pub (super) fn pixdim<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, [f32; 8], E> {
+    let mut xs = [0.0f32; 8];
+    let (i, _) = fill(be_f32, &mut xs)(i)?;
+
+    Ok((i, xs))
+}
+
+pub (super) fn vox_offset<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
+pub (super) fn scl_slope<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
+pub (super) fn scl_inter<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
+pub (super) fn slice_end<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i16, E> {
+    be_i16(i)
+}
+
+pub (super) fn slice_code<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Code, E> {
+    let (i, code) = be_i8(i)?;
+    match code {
+        1 => Ok((i, Code::SEQ_INC)),
+        2 => Ok((i, Code::SEQ_DEC)),
+        3 => Ok((i, Code::ALT_INC)),
+        4 => Ok((i, Code::ALT_DEC)),
+        5 => Ok((i, Code::ALT_INC2)),
+        6 => Ok((i, Code::ALT_DEC2)),
+        _ => Ok((i, Code::UNKNOWN)),
+    }
+}
+
+pub (super) fn xyzt_units<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i8, E> {
+    be_i8(i)
+}
+
+pub (super) fn cal_max<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
+pub (super) fn cal_min<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
+pub (super) fn slice_duration<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
+    be_f32(i)
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
     let (i, size)       = sizeof_hdr(i)?;
     let (i, _)          = data_type(i)?;
@@ -178,12 +231,27 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, datatype)   = datatype(i)?;
     let (i, bitpix)     = bitpix(i)?;
 
+    let (i, start)      = slice_start(i)?;
+    let (i, _)          = pixdim(i)?;
+    let (i, _)          = vox_offset(i)?;
+    let (i, _)          = scl_slope(i)?;
+    let (i, _)          = scl_inter(i)?;
+    let (i, end)        = slice_end(i)?;
+    let (i, code)       = slice_code(i)?;
+    let (i, _)          = xyzt_units(i)?;
+    let (i, _)          = cal_max(i)?;
+    let (i, _)          = cal_min(i)?;
+    let (i, duration)   = slice_duration(i)?;
+
+    let slice = Slice{start, end, code, duration};
+
     let header  = Header {
         size
         , dimension
         , intent
         , datatype
         , bitpix
+        , slice
     };
     Ok((i, header))
 }

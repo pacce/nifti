@@ -1,9 +1,6 @@
 use {
     nifti::Header
-    , std::{
-        fs::File
-        , io::Read
-    }
+    , std::fs::File
 };
 
 fn main() -> std::io::Result<()> {

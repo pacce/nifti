@@ -8,13 +8,15 @@ use {
         , path::Path
     }
     , super::{
-        Datatype
+        Code
+        , Datatype
         , Dimension
         , decode
         , encode
         , intent::Intent
         , Header
         , Packet
+        , Slice
     }
 };
 
@@ -32,6 +34,12 @@ fn nifti1() {
         },
         datatype        : Datatype::UINT8,
         bitpix          : 8,
+        slice           : Slice {
+            start       : 0,
+            end         : 0,
+            code        : Code::UNKNOWN,
+            duration    : 0.0
+        },
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -132,6 +140,45 @@ fn bitpix(expected: i16) -> bool {
         false
     } else {
         match decode::bitpix::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn slice_start(expected: i16) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::slice_start(expected), &mut buffer) {
+        false
+    } else {
+        match decode::slice_start::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn slice_end(expected: i16) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i32>()]);
+    if let Err(_) = gen(encode::slice_end(expected), &mut buffer) {
+        false
+    } else {
+        match decode::slice_end::<(&[u8], ErrorKind)>(buffer.get_ref()) {
+            Ok((_, actual)) => actual == expected,
+            Err(_)          => false,
+        }
+    }
+}
+
+#[quickcheck]
+fn slice_code(expected: Code) -> bool {
+    let mut buffer = Cursor::new(vec![0u8; size_of::<i16>()]);
+    if let Err(_) = gen(encode::slice_code(expected), &mut buffer) {
+        false
+    } else {
+        match decode::slice_code::<(&[u8], ErrorKind)>(buffer.get_ref()) {
             Ok((_, actual)) => actual == expected,
             Err(_)          => false,
         }

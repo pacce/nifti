@@ -13,8 +13,9 @@ use {
         , Dimension
         , decode
         , encode
-        , intent::Intent
         , Header
+        , intent::Intent
+        , Limits
         , Packet
         , Scale
         , Slice
@@ -46,7 +47,8 @@ fn nifti1() {
         scale           : Scale {
             slope       : 0.0f32,
             intercept   : 0.0f32,
-        }
+        },
+        limits          : Limits::new(0.0f32, 255.0f32),
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));

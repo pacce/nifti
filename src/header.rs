@@ -6,6 +6,7 @@ mod test;
 
 mod datatype;
 mod dimension;
+mod intensity;
 mod intent;
 mod scale;
 mod slice;
@@ -14,6 +15,7 @@ use {
     cookie_factory::{gen, GenError}
     , datatype::Datatype
     , dimension::Dimension
+    , intensity::Limits
     , intent::Packet
     , scale::Scale
     , slice::{Code, Slice}
@@ -32,7 +34,8 @@ pub struct Header {
     slice       : Slice,
     pixdim      : [f32; 8],
     offset      : f32,
-    scale       : Scale
+    scale       : Scale,
+    limits      : Limits
 }
 
 impl Header {
@@ -81,6 +84,7 @@ impl quickcheck::Arbitrary for Header {
 
         let offset      = i32::arbitrary(g) as f32;
         let scale       = Scale::arbitrary(g);
+        let limits      = Limits::arbitrary(g);
 
         Self{
             size: SIZE as i32
@@ -92,6 +96,7 @@ impl quickcheck::Arbitrary for Header {
             , pixdim
             , offset
             , scale
+            , limits
         }
     }
 }

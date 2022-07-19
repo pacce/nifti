@@ -184,6 +184,14 @@ pub (super) fn scl_inter<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<
     be_f32(i)
 }
 
+pub (super) fn scale<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Scale, E> {
+    let (i, slope)      = scl_slope(i)?;
+    let (i, intercept)  = scl_inter(i)?;
+    let scale           = Scale::new(slope, intercept);
+
+    Ok((i, scale))
+}
+
 pub (super) fn slice_end<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, i16, E> {
     be_i16(i)
 }
@@ -213,6 +221,14 @@ pub (super) fn cal_min<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'
     be_f32(i)
 }
 
+pub (super) fn limits<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Limits, E> {
+    let (i, maximum)    = cal_max(i)?;
+    let (i, minimum)    = cal_min(i)?;
+    let limits          = Limits::new(minimum, maximum);
+
+    Ok((i, limits))
+}
+
 pub (super) fn slice_duration<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, f32, E> {
     be_f32(i)
 }
@@ -234,17 +250,14 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, start)      = slice_start(i)?;
     let (i, pixdim)     = pixdim(i)?;
     let (i, offset)     = vox_offset(i)?;
-    let (i, slope)      = scl_slope(i)?;
-    let (i, intercept)  = scl_inter(i)?;
+    let (i, scale)      = scale(i)?;
     let (i, end)        = slice_end(i)?;
     let (i, code)       = slice_code(i)?;
     let (i, _)          = xyzt_units(i)?;
-    let (i, _)          = cal_max(i)?;
-    let (i, _)          = cal_min(i)?;
+    let (i, limits)     = limits(i)?;
     let (i, duration)   = slice_duration(i)?;
 
     let slice   = Slice{start, end, code, duration};
-    let scale   = Scale::new(slope, intercept);
 
     let header  = Header {
         size
@@ -256,6 +269,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
         , pixdim
         , offset
         , scale
+        , limits
     };
     Ok((i, header))
 }

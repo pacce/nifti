@@ -16,6 +16,8 @@ use {
         , Dimension
         , Header
         , intent::{Intent, Packet, Parameters}
+        , Limits
+        , Scale
         , slice::Code
     }
 };
@@ -104,6 +106,12 @@ pub (super) fn scl_inter<W: Write>(i: f32) -> impl SerializeFn<W> {
     be_f32(i)
 }
 
+pub (super) fn scale<W: Write>(i: Scale) -> impl SerializeFn<W> {
+    tuple(
+        (scl_slope(i.slope), scl_inter(i.intercept))
+    )
+}
+
 pub (super) fn slice_end<W: Write>(i: i16) -> impl SerializeFn<W> {
     be_i16(i)
 }
@@ -124,13 +132,18 @@ pub (super) fn cal_min<W: Write>(i: f32) -> impl SerializeFn<W> {
     be_f32(i)
 }
 
+pub (super) fn limits<W: Write>(i: Limits) -> impl SerializeFn<W> {
+    tuple(
+        (cal_max(*i.maximum()), cal_min(*i.minimum()))
+    )
+}
+
 pub (super) fn slice_duration<W: Write>(i: f32) -> impl SerializeFn<W> {
     be_f32(i)
 }
 
 pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
-    let slice = header.slice;
-    let scale = header.scale;
+    let slice   = header.slice;
 
     tuple(
         ( sizeof_hdr(header.size)
@@ -146,13 +159,11 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
         , slice_start(slice.start)
         , pixdim(header.pixdim)
         , vox_offset(header.offset)
-        , scl_slope(scale.slope)
-        , scl_inter(scale.intercept)
+        , scale(header.scale)
         , slice_end(slice.end)
         , slice_code(slice.code)
         , xyzt_units(0i8)
-        , cal_max(0.0f32)
-        , cal_min(0.0f32)
+        , limits(header.limits)
         , slice_duration(slice.duration)
         )
     )

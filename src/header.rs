@@ -7,6 +7,7 @@ mod test;
 mod datatype;
 mod dimension;
 mod intent;
+mod scale;
 mod slice;
 
 use {
@@ -28,7 +29,8 @@ pub struct Header {
     datatype    : Datatype,
     bitpix      : i16,
     slice       : Slice,
-    pixdim      : [f32; 8]
+    pixdim      : [f32; 8],
+    offset      : f32
 }
 
 impl Header {
@@ -75,6 +77,8 @@ impl quickcheck::Arbitrary for Header {
         let slice       = Slice::arbitrary(g);
         let pixdim      = [i32::arbitrary(g) as f32; 8];
 
+        let offset      = i32::arbitrary(g) as f32;
+
         Self{
             size: SIZE as i32
             , dimension
@@ -83,6 +87,7 @@ impl quickcheck::Arbitrary for Header {
             , bitpix
             , slice
             , pixdim
+            , offset
         }
     }
 }

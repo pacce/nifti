@@ -142,7 +142,7 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
         , datatype(header.datatype)
         , bitpix(header.bitpix)
         , slice_start(slice.start)
-        , pixdim([0.0f32; 8])
+        , pixdim(header.pixdim)
         , vox_offset(0.0f32)
         , scl_slope(0.0f32)
         , scl_inter(0.0f32)

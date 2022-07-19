@@ -232,7 +232,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, bitpix)     = bitpix(i)?;
 
     let (i, start)      = slice_start(i)?;
-    let (i, _)          = pixdim(i)?;
+    let (i, pixdim)     = pixdim(i)?;
     let (i, _)          = vox_offset(i)?;
     let (i, _)          = scl_slope(i)?;
     let (i, _)          = scl_inter(i)?;
@@ -252,6 +252,7 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
         , datatype
         , bitpix
         , slice
+        , pixdim
     };
     Ok((i, header))
 }

@@ -40,6 +40,7 @@ fn nifti1() {
             code        : Code::UNKNOWN,
             duration    : 0.0
         },
+        pixdim          : [0.0, 2.0, 2.0, 2.0, 1.0, 1.0, 1.0, 1.0],
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));

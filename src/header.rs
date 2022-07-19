@@ -27,7 +27,8 @@ pub struct Header {
     intent      : Packet,
     datatype    : Datatype,
     bitpix      : i16,
-    slice       : Slice
+    slice       : Slice,
+    pixdim      : [f32; 8]
 }
 
 impl Header {
@@ -72,6 +73,7 @@ impl quickcheck::Arbitrary for Header {
         let bitpix      = i16::arbitrary(g);
 
         let slice       = Slice::arbitrary(g);
+        let pixdim      = [i32::arbitrary(g) as f32; 8];
 
         Self{
             size: SIZE as i32
@@ -80,6 +82,7 @@ impl quickcheck::Arbitrary for Header {
             , datatype
             , bitpix
             , slice
+            , pixdim
         }
     }
 }

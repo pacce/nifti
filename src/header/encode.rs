@@ -5,6 +5,7 @@ use {
             , be_i8
             , be_i16
             , be_i32
+            , be_u8
         }
         , multi::many_ref
         , sequence::tuple
@@ -12,7 +13,9 @@ use {
     }
     , std::io::Write
     , super::{
-        Datatype
+        Auxiliary
+        , Datatype
+        , Description
         , Dimension
         , Header
         , intent::{Intent, Packet, Parameters}
@@ -154,6 +157,16 @@ pub (super) fn glmin<W: Write>(i: i32) -> impl SerializeFn<W> {
     be_i32(i)
 }
 
+pub (super) fn descrip<W: Write>(xs: Description) -> impl SerializeFn<W> {
+    let ys : [u8; 80] = xs.into();
+    many_ref(ys, be_u8)
+}
+
+pub (super) fn aux_file<W: Write>(xs: Auxiliary) -> impl SerializeFn<W> {
+    let ys : [u8; 24] = xs.into();
+    many_ref(ys, be_u8)
+}
+
 pub fn header_key<W: Write>(header: Header) -> impl SerializeFn<W> {
     tuple(
         ( sizeof_hdr(header.size)
@@ -193,6 +206,8 @@ pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
     tuple(
         ( header_key(header)
         , image_dimension(header)
+        , descrip(header.description)
+        , aux_file(header.auxiliary)
         )
     )
 }

@@ -8,8 +8,10 @@ use {
         , path::Path
     }
     , super::{
-        Code
+        Auxiliary
+        , Code
         , Datatype
+        , Description
         , Dimension
         , decode
         , encode
@@ -50,6 +52,8 @@ fn nifti1() {
         },
         limits          : Limits::new(0.0f32, 255.0f32),
         shift           : 0.0f32,
+        description     : Description::from("FSL3.2beta"),
+        auxiliary       : Auxiliary::from("none                   "),
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));

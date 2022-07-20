@@ -245,33 +245,49 @@ pub (super) fn glmin<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a 
     be_i32(i)
 }
 
+pub (super) fn descrip<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Description, E> {
+    let mut xs = [0u8; 80];
+    let (i, _) = fill(be_u8, &mut xs)(i)?;
+
+    Ok((i, Description::from(&xs)))
+}
+
+pub (super) fn aux_file<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Auxiliary, E> {
+    let mut xs = [0u8; 24];
+    let (i, _) = fill(be_u8, &mut xs)(i)?;
+
+    Ok((i, Auxiliary::from(&xs)))
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
-    let (i, size)       = sizeof_hdr(i)?;
-    let (i, _)          = data_type(i)?;
-    let (i, _)          = db_name(i)?;
-    let (i, _)          = extents(i)?;
-    let (i, _)          = session_error(i)?;
-    let (i, _)          = regular(i)?;
+    let (i, size)           = sizeof_hdr(i)?;
+    let (i, _)              = data_type(i)?;
+    let (i, _)              = db_name(i)?;
+    let (i, _)              = extents(i)?;
+    let (i, _)              = session_error(i)?;
+    let (i, _)              = regular(i)?;
 
-    let (i, dimension)  = dimension(i)?;
-    let (i, intent)     = packet(i)?;
+    let (i, dimension)      = dimension(i)?;
+    let (i, intent)         = packet(i)?;
 
-    let (i, datatype)   = datatype(i)?;
-    let (i, bitpix)     = bitpix(i)?;
+    let (i, datatype)       = datatype(i)?;
+    let (i, bitpix)         = bitpix(i)?;
 
-    let (i, start)      = slice_start(i)?;
-    let (i, pixdim)     = pixdim(i)?;
-    let (i, offset)     = vox_offset(i)?;
-    let (i, scale)      = scale(i)?;
-    let (i, end)        = slice_end(i)?;
-    let (i, code)       = slice_code(i)?;
-    let (i, _)          = xyzt_units(i)?;
-    let (i, limits)     = limits(i)?;
-    let (i, duration)   = slice_duration(i)?;
-    let (i, shift)      = toffset(i)?;
+    let (i, start)          = slice_start(i)?;
+    let (i, pixdim)         = pixdim(i)?;
+    let (i, offset)         = vox_offset(i)?;
+    let (i, scale)          = scale(i)?;
+    let (i, end)            = slice_end(i)?;
+    let (i, code)           = slice_code(i)?;
+    let (i, _)              = xyzt_units(i)?;
+    let (i, limits)         = limits(i)?;
+    let (i, duration)       = slice_duration(i)?;
+    let (i, shift)          = toffset(i)?;
 
-    let (i, _)          = glmax(i)?;
-    let (i, _)          = glmin(i)?;
+    let (i, _)              = glmax(i)?;
+    let (i, _)              = glmin(i)?;
+    let (i, description)    = descrip(i)?;
+    let (i, auxiliary)      = aux_file(i)?;
 
     let slice   = Slice{start, end, code, duration};
 
@@ -287,6 +303,8 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
         , scale
         , limits
         , shift
+        , description
+        , auxiliary
     };
     Ok((i, header))
 }

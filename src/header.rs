@@ -4,7 +4,9 @@ mod encode;
 #[cfg(test)]
 mod test;
 
+mod auxiliary;
 mod datatype;
+mod description;
 mod dimension;
 mod intensity;
 mod intent;
@@ -12,8 +14,10 @@ mod scale;
 mod slice;
 
 use {
-    cookie_factory::{gen, GenError}
+    auxiliary::Auxiliary
+    , cookie_factory::{gen, GenError}
     , datatype::Datatype
+    , description::Description
     , dimension::Dimension
     , intensity::Limits
     , intent::Packet
@@ -37,6 +41,8 @@ pub struct Header {
     scale       : Scale,
     limits      : Limits,
     shift       : f32,
+    description : Description,
+    auxiliary   : Auxiliary
 }
 
 impl Header {
@@ -89,6 +95,9 @@ impl quickcheck::Arbitrary for Header {
         let limits      = Limits::arbitrary(g);
         let shift       = i32::arbitrary(g) as f32;
 
+        let description = Description::arbitrary(g);
+        let auxiliary   = Auxiliary::arbitrary(g);
+
         Self{
             size: SIZE as i32
             , dimension
@@ -101,6 +110,8 @@ impl quickcheck::Arbitrary for Header {
             , scale
             , limits
             , shift
+            , description
+            , auxiliary
         }
     }
 }

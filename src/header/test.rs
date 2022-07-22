@@ -21,6 +21,7 @@ use {
         , Packet
         , Scale
         , Slice
+        , Xform
     }
 };
 
@@ -54,6 +55,8 @@ fn nifti1() {
         shift           : 0.0f32,
         description     : Description::from("FSL3.2beta"),
         auxiliary       : Auxiliary::from("none                   "),
+        qform           : Xform::UNKNOWN,
+        sform           : Xform::MNI_152,
     };
 
     let home    = Path::new(env!("CARGO_MANIFEST_DIR"));

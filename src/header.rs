@@ -12,6 +12,7 @@ mod intensity;
 mod intent;
 mod scale;
 mod slice;
+mod xform;
 
 use {
     auxiliary::Auxiliary
@@ -24,6 +25,7 @@ use {
     , scale::Scale
     , slice::{Code, Slice}
     , std::io::{Read, Write}
+    , xform::Xform
 };
 
 const SIZE : usize = 348;
@@ -42,7 +44,9 @@ pub struct Header {
     limits      : Limits,
     shift       : f32,
     description : Description,
-    auxiliary   : Auxiliary
+    auxiliary   : Auxiliary,
+    qform       : Xform,
+    sform       : Xform
 }
 
 impl Header {
@@ -98,6 +102,9 @@ impl quickcheck::Arbitrary for Header {
         let description = Description::arbitrary(g);
         let auxiliary   = Auxiliary::arbitrary(g);
 
+        let qform       = Xform::arbitrary(g);
+        let sform       = Xform::arbitrary(g);
+
         Self{
             size: SIZE as i32
             , dimension
@@ -112,6 +119,8 @@ impl quickcheck::Arbitrary for Header {
             , shift
             , description
             , auxiliary
+            , qform
+            , sform
         }
     }
 }

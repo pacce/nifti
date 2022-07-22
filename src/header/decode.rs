@@ -259,6 +259,26 @@ pub (super) fn aux_file<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&
     Ok((i, Auxiliary::from(&xs)))
 }
 
+pub (super) fn xform<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Xform, E> {
+    let (i, code) = be_i16(i)?;
+    match code {
+        0 => Ok((i, Xform::UNKNOWN)),
+        1 => Ok((i, Xform::SCANNER_ANAT)),
+        2 => Ok((i, Xform::ALIGNED_ANAT)),
+        3 => Ok((i, Xform::TALAIRACH)),
+        4 => Ok((i, Xform::MNI_152)),
+        _ => Ok((i, Xform::TEMPLATE_OTHER)),
+    }
+}
+
+pub (super) fn qform_code<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Xform, E> {
+    xform(i)
+}
+
+pub (super) fn sform_code<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Xform, E> {
+    xform(i)
+}
+
 pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, Header, E> {
     let (i, size)           = sizeof_hdr(i)?;
     let (i, _)              = data_type(i)?;
@@ -289,6 +309,9 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
     let (i, description)    = descrip(i)?;
     let (i, auxiliary)      = aux_file(i)?;
 
+    let (i, qform)          = qform_code(i)?;
+    let (i, sform)          = sform_code(i)?;
+
     let slice   = Slice{start, end, code, duration};
 
     let header  = Header {
@@ -305,6 +328,8 @@ pub fn header<'a, E: ParseError<&'a Bytes>>(i: &'a Bytes) -> IResult<&'a Bytes, 
         , shift
         , description
         , auxiliary
+        , qform
+        , sform
     };
     Ok((i, header))
 }

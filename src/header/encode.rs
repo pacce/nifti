@@ -22,6 +22,7 @@ use {
         , Limits
         , Scale
         , slice::Code
+        , Xform
     }
 };
 
@@ -167,6 +168,18 @@ pub (super) fn aux_file<W: Write>(xs: Auxiliary) -> impl SerializeFn<W> {
     many_ref(ys, be_u8)
 }
 
+pub (super) fn xform<W: Write>(i: Xform) -> impl SerializeFn<W> {
+    be_i16(i as i16)
+}
+
+pub (super) fn qform_code<W: Write>(i: Xform) -> impl SerializeFn<W> {
+    xform(i)
+}
+
+pub (super) fn sform_code<W: Write>(i: Xform) -> impl SerializeFn<W> {
+    xform(i)
+}
+
 pub fn header_key<W: Write>(header: Header) -> impl SerializeFn<W> {
     tuple(
         ( sizeof_hdr(header.size)
@@ -202,12 +215,21 @@ pub fn image_dimension<W: Write>(header: Header) -> impl SerializeFn<W> {
     )
 }
 
+pub fn data_history<W: Write>(header: Header) -> impl SerializeFn<W> {
+    tuple(
+        ( descrip(header.description)
+        , aux_file(header.auxiliary)
+        , qform_code(header.qform)
+        , sform_code(header.sform)
+        )
+    )
+}
+
 pub fn header<W: Write>(header: Header) -> impl SerializeFn<W> {
     tuple(
         ( header_key(header)
         , image_dimension(header)
-        , descrip(header.description)
-        , aux_file(header.auxiliary)
+        , data_history(header)
         )
     )
 }
